@@ -1,0 +1,7 @@
+---
+# ===== КОНФИГУРАЦИОННЫЙ ФАЙЛ УПРАВЛЕНИЯ СВЯЗКОЙ SCIP+Ecole =====
+# Путь до файла математической постановки задачи
+path_to_lp_file: !!str input_for_model/ikp_milp_problem.lp
+# Путь до файла настроек решателя SCIP
+path_to_scip_solver_configs: !!str configs_for_scip_solver/base_scip.set
+...
