@@ -1,0 +1,6 @@
+# common
+display/lpinfo = TRUE
+limits/gap = 10
+limits/time=1200
+limits/restarts=0
+limits/solutions=1
