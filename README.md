@@ -24,3 +24,10 @@ $ python run_scip_ecole_pipeline.py
 Реализация с внешним модулем машинного обучения
 
 ![image_info](./scip_ecole_model/documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole_ml.PNG)
+
+Вспомогательные материалы
+```bash
+# Запуск решателя SCIP в интерактивном режиме
+# Прочитать файл математической постановки задачи problem.lp, настроив сессию с помощью scip_params.set
+scip -s scip_params.set -c "read problem.lp optimize quit"
+```
