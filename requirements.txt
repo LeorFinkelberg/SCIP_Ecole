@@ -1,0 +1,2 @@
+ecole==0.7.3
+pyscipopt==3.3.0
