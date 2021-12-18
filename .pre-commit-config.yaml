@@ -6,7 +6,7 @@ repos:
     # проверяет наличие переноса строки в конце всех текстовых файлов
     - id: end-of-file-fixer
     # предупреждает о добавлении больших файлов в Git
-    - id: check-added-large-files
+    # - id: check-added-large-files
     # предупреждает о сохранении файлов с UTF-8 BOM
     - id: fix-byte-order-marker
     # предотвращает сохранение приватных ключей
