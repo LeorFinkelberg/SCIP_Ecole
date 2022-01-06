@@ -1,6 +1,7 @@
 import os
 import sys
 import typing as t
+from collections import namedtuple
 
 import dotenv
 import ecole
@@ -78,6 +79,7 @@ def scip_ecole_optimize(path_to_lp_file: PosixPath, scip_params: dict) -> ecole.
     """
     Запускает процесс поиска решения
     """
+    logger.info("Procedure for finding solution with `SCIP+Ecole` has been started ...")
     env = ecole.environment.Branching(
         scip_params=scip_params,
         observation_function=ecole.observation.MilpBipartite(),
@@ -103,8 +105,31 @@ def scip_ecole_optimize(path_to_lp_file: PosixPath, scip_params: dict) -> ecole.
     return env.model.as_pyscipopt()
 
 
+def get_stats_before_solving(path_to_lp_file: PosixPath) -> t.NamedTuple:
+    """
+    Собирает статистику о задаче до запуска решения
+    """
+    model = pyscipopt.scip.Model()
+    model.readProblem(path_to_lp_file)
+    n_vars: int = model.getNVars()
+    n_bin_vars: int = model.getNBinVars()
+    n_int_vars: int = model.getNIntVars()
+    n_conss: int = model.getNConss()
+
+    model_stats = namedtuple("model_stats", ["n_vars", "n_bin_vars", "n_int_vars", "n_conss"])
+    model_stats.n_vars = n_vars
+    model_stats.n_bin_vars = n_bin_vars
+    model_stats.n_int_vars = n_int_vars
+    model_stats.n_conss = n_conss
+
+    return model_stats
+
+
 def write_results_and_stats(
-    problem_name: str, model: pyscipopt.scip.Model, path_to_output_dir: PosixPath
+    problem_name: str,
+    model: pyscipopt.scip.Model,
+    stats_before_solving: t.NamedTuple,
+    path_to_output_dir: PosixPath,
 ) -> t.NoReturn:
     """
     Записывает результаты поиска решения и статистику
@@ -117,17 +142,17 @@ def write_results_and_stats(
     n_sols: int = model.getNSols()
     n_best_sols: int = model.getNBestSolsFound()
 
-    n_vars: int = model.getNVars()
-    n_bin_vars: int = model.getNBinVars()
-    n_int_vars: int = model.getNIntVars()
-    n_conss: int = model.getNConss()
+    n_vars: int = stats_before_solving.n_vars
+    n_bin_vars: int = stats_before_solving.n_bin_vars
+    n_int_vars: int = stats_before_solving.n_int_vars
+    n_conss: int = stats_before_solving.n_conss
 
     logger.info(
         f"\n\tSummary (after solving):\n"
         f"\t- Problem name (sense): {problem_name} ({obj_sense})\n"
         f"\t- N Vars: {n_vars}\n"
-        f"\t\t* N Bin vars: {n_bin_vars}\n"
-        f"\t\t* N Int vars: {n_int_vars}\n"
+        f"\t\t* N Bin Vars: {n_bin_vars}\n"
+        f"\t\t* N Int Vars: {n_int_vars}\n"
         f"\t- N Conss: {n_conss}\n"
         f"\n\tResults:\n"
         f"\t- N Sols / N Best sols: {n_sols} / {n_best_sols}\n"
@@ -170,10 +195,20 @@ def main():
 
     # Словарь начальных управляющих параметров решателя SCIP
     scip_params: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
+
+    # Собрать статистику о задаче до запуска решения
+    stats_before_solving: t.NamedTuple = get_stats_before_solving(path_to_lp_file=path_to_lp_file)
+
+    # Запустить процедуру поиска решения
     model = scip_ecole_optimize(path_to_lp_file=path_to_lp_file, scip_params=scip_params)
 
     # Записать статистику и резульаты поиска решения
-    write_results_and_stats(problem_name=problem_name, model=model, path_to_output_dir=path_to_output_dir)
+    write_results_and_stats(
+        problem_name=problem_name,
+        model=model,
+        stats_before_solving=stats_before_solving,
+        path_to_output_dir=path_to_output_dir,
+    )
 
 
 if __name__ == "__main__":
