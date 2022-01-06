@@ -1,9 +1,12 @@
 import logging.config
+import os
 import sys
 
+import dotenv
 from pathlib2 import Path
 
-LOG_CONFIG_FILENAME = "scip_ecole_log_config.ini"
+dotenv.load_dotenv(".env")
+LOG_CONFIG_FILENAME = os.getenv("LOG_CONFIG_FILENAME")
 path_to_log_config_file = Path().cwd().joinpath(LOG_CONFIG_FILENAME)
 
 try:
