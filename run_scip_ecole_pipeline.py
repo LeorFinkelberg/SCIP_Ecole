@@ -1,7 +1,6 @@
 import os
 import sys
 import typing as t
-from dataclasses import dataclass, field
 
 import dotenv
 import ecole
@@ -74,7 +73,33 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
     return settings
 
 
-# def scip_ecole_optimize():
+def scip_ecole_optimize(path_to_lp_file: PosixPath, scip_params: dict) -> ecole.core.scip.Model:
+    """
+    Запускает процесс поиска решения
+    """
+    env = ecole.environment.Branching(
+        scip_params=scip_params,
+        observation_function=ecole.observation.MilpBipartite(),
+        reward_function=ecole.reward.NNodes(),
+        information_function={
+            "nb_nodes": ecole.reward.NNodes().cumsum(),
+            "time": ecole.reward.SolvingTime().cumsum(),
+        },
+    )
+    logger.info("Reset environment ...")
+    nb_nodes, time = 0, 0
+    obs, action_set, reward, done, info = env.reset(str(path_to_lp_file))
+    print(f"After reset: {action_set}, {reward}, {done}, {info}")
+
+    while not done:
+        logger.info("New step in environment ...")
+        obs, action_set, reward, done, info = env.step(action_set[0])
+        print(f"In while-ecole loop: {obs}, {action_set}, {reward}, {done}, {info}")
+
+        nb_nodes += info["nb_nodes"]
+        time += info["time"]
+
+    return env.model.as_pyscipopt()
 
 
 def main():
@@ -97,22 +122,9 @@ def main():
     # Путь до set-файла настроек решателя SCIP
     path_to_scip_solver_configs: PosixPath = Path(config_params["path_to_scip_solver_configs"])
 
-    """
-    try:
-        model = ecole.scip.Model.from_file(path_to_lp_file)
-    except ecole.core.scip.Exception as err:
-        logger.error(f"{err}")
-        sys.exit(-1)
-    else:
-        logger.info(f"File `{path_to_lp_file}` has been read successfully!")
-
     # Словарь начальных управляющих параметров решателя SCIP
-    scip_settings: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
-    model.set_params(scip_settings)
-    """
-
-    print(type(path_to_lp_file))
-    # model.solve()
+    scip_params: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
+    model = scip_ecole_optimize(path_to_lp_file, scip_params=scip_params)
 
 
 if __name__ == "__main__":
