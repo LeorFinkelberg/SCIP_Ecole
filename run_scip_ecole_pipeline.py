@@ -1,7 +1,9 @@
+import os
 import sys
 import typing as t
 from dataclasses import dataclass, field
 
+import dotenv
 import ecole
 import yaml
 from pathlib2 import Path, PosixPath
@@ -40,7 +42,7 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
                         continue
 
                     param, value = line.split("=")
-                    param = param.lower().strip()
+                    param = param.strip()
                     value = value.lower().strip()
 
                     if value == "true":
@@ -72,22 +74,30 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
     return settings
 
 
+# def scip_ecole_optimize():
+
+
 def main():
     """
     Главная функция, запускающая цепочку вычислений
     на базе связки SCIP+Ecole
     """
+    # Загрузить локальные переменные в текущее окружение
+    dotenv.load_dotenv(".env")
+
     # Конфигурационный файл управляения связкой SCIP+Ecole
-    SCIP_ECOLE_MODEL_CONFIG_FILENAME = "scip_ecole_model_config.yaml"
+    SCIP_ECOLE_MODEL_CONFIG_FILENAME = os.getenv("SCIP_ECOLE_MODEL_CONFIG_FILENAME")
     path_to_scip_ecole_model_config_file = Path().cwd().joinpath(SCIP_ECOLE_MODEL_CONFIG_FILENAME)
+
     # Словарь параметров для управления связкой SCIP+Ecole
     config_params: dict = read_config_yaml_file(path_to_scip_ecole_model_config_file)
 
     # Путь до lp-файла математической постановки задачи
-    path_to_lp_file = config_params["path_to_lp_file"]
+    path_to_lp_file: PosixPath = Path(config_params["path_to_lp_file"])
     # Путь до set-файла настроек решателя SCIP
-    path_to_scip_solver_configs = config_params["path_to_scip_solver_configs"]
+    path_to_scip_solver_configs: PosixPath = Path(config_params["path_to_scip_solver_configs"])
 
+    """
     try:
         model = ecole.scip.Model.from_file(path_to_lp_file)
     except ecole.core.scip.Exception as err:
@@ -99,8 +109,9 @@ def main():
     # Словарь начальных управляющих параметров решателя SCIP
     scip_settings: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
     model.set_params(scip_settings)
+    """
 
-    print(scip_settings)
+    print(type(path_to_lp_file))
     # model.solve()
 
 
