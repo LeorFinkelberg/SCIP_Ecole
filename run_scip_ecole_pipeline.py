@@ -4,6 +4,7 @@ import typing as t
 
 import dotenv
 import ecole
+import pyscipopt
 import yaml
 from pathlib2 import Path, PosixPath
 
@@ -102,6 +103,47 @@ def scip_ecole_optimize(path_to_lp_file: PosixPath, scip_params: dict) -> ecole.
     return env.model.as_pyscipopt()
 
 
+def write_results_and_stats(
+    problem_name: str, model: pyscipopt.scip.Model, path_to_output_dir: PosixPath
+) -> t.NoReturn:
+    """
+    Записывает результаты поиска решения и статистику
+    """
+    obj_val: float = model.getObjVal()
+    obj_sense: str = model.getObjectiveSense()
+    gap: float = model.getGap()
+    solving_time: float = model.getSolvingTime()
+    status: str = model.getStatus()
+    n_sols: int = model.getNSols()
+    n_best_sols: int = model.getNBestSolsFound()
+
+    n_vars: int = model.getNVars()
+    n_bin_vars: int = model.getNBinVars()
+    n_int_vars: int = model.getNIntVars()
+    n_conss: int = model.getNConss()
+
+    logger.info(
+        f"\n\tSummary (after solving):\n"
+        f"\t- Problem name (sense): {problem_name} ({obj_sense})\n"
+        f"\t- N Vars: {n_vars}\n"
+        f"\t\t* N Bin vars: {n_bin_vars}\n"
+        f"\t\t* N Int vars: {n_int_vars}\n"
+        f"\t- N Conss: {n_conss}\n"
+        f"\n\tResults:\n"
+        f"\t- N Sols / N Best sols: {n_sols} / {n_best_sols}\n"
+        f"\t- Objective value [{status}]: {obj_val:.3g}\n"
+        f"\t- Gap: {gap:.3g}%\n"
+        f"\t- Solving time: {solving_time / 60:.2g} min"
+    )
+
+    path_to_output_dir = Path().cwd().joinpath(path_to_output_dir)
+    best_sol_filename = f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.sol"
+    stats_filename = f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.stats"
+
+    model.writeBestSol(path_to_output_dir.joinpath(best_sol_filename))
+    model.writeStatistics(path_to_output_dir.joinpath(stats_filename))
+
+
 def main():
     """
     Главная функция, запускающая цепочку вычислений
@@ -117,14 +159,21 @@ def main():
     # Словарь параметров для управления связкой SCIP+Ecole
     config_params: dict = read_config_yaml_file(path_to_scip_ecole_model_config_file)
 
+    # Наименование задачи
+    problem_name: str = config_params["problem_name"]
     # Путь до lp-файла математической постановки задачи
     path_to_lp_file: PosixPath = Path(config_params["path_to_lp_file"])
     # Путь до set-файла настроек решателя SCIP
     path_to_scip_solver_configs: PosixPath = Path(config_params["path_to_scip_solver_configs"])
+    # Путь до директории с результатами поиска решения
+    path_to_output_dir: PosixPath = Path(config_params["path_to_output_dir"])
 
     # Словарь начальных управляющих параметров решателя SCIP
     scip_params: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
-    model = scip_ecole_optimize(path_to_lp_file, scip_params=scip_params)
+    model = scip_ecole_optimize(path_to_lp_file=path_to_lp_file, scip_params=scip_params)
+
+    # Записать статистику и резульаты поиска решения
+    write_results_and_stats(problem_name=problem_name, model=model, path_to_output_dir=path_to_output_dir)
 
 
 if __name__ == "__main__":
