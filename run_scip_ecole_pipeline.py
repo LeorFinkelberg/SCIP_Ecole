@@ -75,7 +75,9 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
     return settings
 
 
-def scip_ecole_optimize(path_to_lp_file: PosixPath, scip_params: dict) -> ecole.core.scip.Model:
+def scip_ecole_optimize(
+    path_to_lp_file: PosixPath, scip_params: dict
+) -> ecole.core.scip.Model:
     """
     Запускает процесс поиска решения
     """
@@ -92,15 +94,16 @@ def scip_ecole_optimize(path_to_lp_file: PosixPath, scip_params: dict) -> ecole.
     logger.info("Reset environment ...")
     nb_nodes, time = 0, 0
     obs, action_set, reward, done, info = env.reset(str(path_to_lp_file))
-    print(f"After reset: {action_set}, {reward}, {done}, {info}")
 
+    count = 0
     while not done:
-        logger.info("New step in environment ...")
+        logger.info(f"New step in environment [iter={count}] ...")
         obs, action_set, reward, done, info = env.step(action_set[0])
-        print(f"In while-ecole loop: {obs}, {action_set}, {reward}, {done}, {info}")
+        # print(f"In while-ecole loop: {obs}, {action_set}, {reward}, {done}, {info}")
 
         nb_nodes += info["nb_nodes"]
         time += info["time"]
+        count += 1
 
     return env.model.as_pyscipopt()
 
@@ -116,7 +119,9 @@ def get_stats_before_solving(path_to_lp_file: PosixPath) -> t.NamedTuple:
     n_int_vars: int = model.getNIntVars()
     n_conss: int = model.getNConss()
 
-    model_stats = namedtuple("model_stats", ["n_vars", "n_bin_vars", "n_int_vars", "n_conss"])
+    model_stats = namedtuple(
+        "model_stats", ["n_vars", "n_bin_vars", "n_int_vars", "n_conss"]
+    )
     model_stats.n_vars = n_vars
     model_stats.n_bin_vars = n_bin_vars
     model_stats.n_int_vars = n_int_vars
@@ -148,7 +153,7 @@ def write_results_and_stats(
     n_conss: int = stats_before_solving.n_conss
 
     logger.info(
-        f"\n\tSummary (after solving):\n"
+        f"\n\tSummary:\n"
         f"\t- Problem name (sense): {problem_name} ({obj_sense})\n"
         f"\t- N Vars: {n_vars}\n"
         f"\t\t* N Bin Vars: {n_bin_vars}\n"
@@ -162,7 +167,9 @@ def write_results_and_stats(
     )
 
     path_to_output_dir = Path().cwd().joinpath(path_to_output_dir)
-    best_sol_filename = f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.sol"
+    best_sol_filename = (
+        f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.sol"
+    )
     stats_filename = f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.stats"
 
     model.writeBestSol(path_to_output_dir.joinpath(best_sol_filename))
@@ -174,12 +181,15 @@ def main():
     Главная функция, запускающая цепочку вычислений
     на базе связки SCIP+Ecole
     """
+    logger.info("SCIP+Ecole starts working ...")
     # Загрузить локальные переменные в текущее окружение
     dotenv.load_dotenv(".env")
 
     # Конфигурационный файл управляения связкой SCIP+Ecole
     SCIP_ECOLE_MODEL_CONFIG_FILENAME = os.getenv("SCIP_ECOLE_MODEL_CONFIG_FILENAME")
-    path_to_scip_ecole_model_config_file = Path().cwd().joinpath(SCIP_ECOLE_MODEL_CONFIG_FILENAME)
+    path_to_scip_ecole_model_config_file = (
+        Path().cwd().joinpath(SCIP_ECOLE_MODEL_CONFIG_FILENAME)
+    )
 
     # Словарь параметров для управления связкой SCIP+Ecole
     config_params: dict = read_config_yaml_file(path_to_scip_ecole_model_config_file)
@@ -189,7 +199,9 @@ def main():
     # Путь до lp-файла математической постановки задачи
     path_to_lp_file: PosixPath = Path(config_params["path_to_lp_file"])
     # Путь до set-файла настроек решателя SCIP
-    path_to_scip_solver_configs: PosixPath = Path(config_params["path_to_scip_solver_configs"])
+    path_to_scip_solver_configs: PosixPath = Path(
+        config_params["path_to_scip_solver_configs"]
+    )
     # Путь до директории с результатами поиска решения
     path_to_output_dir: PosixPath = Path(config_params["path_to_output_dir"])
 
@@ -197,7 +209,9 @@ def main():
     scip_params: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
 
     # Собрать статистику о задаче до запуска решения
-    stats_before_solving: t.NamedTuple = get_stats_before_solving(path_to_lp_file=path_to_lp_file)
+    stats_before_solving: t.NamedTuple = get_stats_before_solving(
+        path_to_lp_file=path_to_lp_file
+    )
 
     # Запустить процедуру поиска решения
     model = scip_ecole_optimize(path_to_lp_file=path_to_lp_file, scip_params=scip_params)
