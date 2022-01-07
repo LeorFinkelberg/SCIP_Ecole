@@ -150,6 +150,7 @@ def write_results_and_stats(
     n_vars: int = stats_before_solving.n_vars
     n_bin_vars: int = stats_before_solving.n_bin_vars
     n_int_vars: int = stats_before_solving.n_int_vars
+    n_cont_vars: int = n_vars - n_bin_vars - n_int_vars
     n_conss: int = stats_before_solving.n_conss
 
     logger.info(
@@ -158,11 +159,12 @@ def write_results_and_stats(
         f"\t- N Vars: {n_vars}\n"
         f"\t\t* N Bin Vars: {n_bin_vars}\n"
         f"\t\t* N Int Vars: {n_int_vars}\n"
+        f"\t\t* N Cont Vars: {n_cont_vars}\n"
         f"\t- N Conss: {n_conss}\n"
         f"\n\tResults:\n"
         f"\t- N Sols / N Best sols: {n_sols} / {n_best_sols}\n"
         f"\t- Objective value [{status}]: {obj_val:.3g}\n"
-        f"\t- Gap: {gap:.3g}%\n"
+        f"\t- Gap: {gap:.3g}\n"
         f"\t- Solving time: {solving_time / 60:.2g} min"
     )
 
