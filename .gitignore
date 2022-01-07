@@ -12,4 +12,5 @@ output_from_scip_ecole/
 
 # artifacts
 .idea/
+.ipynb_checkpoints/
 __pycache__/
