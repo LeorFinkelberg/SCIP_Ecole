@@ -32,5 +32,5 @@ $ python run_scip_ecole_pipeline.py
 $ scip -s scip_params.set -c "read problem.lp optimize quit"
 # Записать логи хода решения SCIP
 $ scip -s configs_for_scip_solver/scip_without_presolving.set \
-    -c "read input_for_model/ikp_milp_problem.lp optimize quit" -l scip_output.log
+    -c "read input_for_model/ikp_milp_problem.lp optimize quit" > scip_output_wo_presolving_and_separating.log
 ```
