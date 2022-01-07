@@ -12,3 +12,4 @@ output_from_scip_ecole/
 
 # artifacts
 .idea/
+__pycache__/
