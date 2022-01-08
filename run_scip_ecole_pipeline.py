@@ -9,6 +9,7 @@ import pyscipopt
 import yaml
 from pathlib2 import Path, PosixPath
 
+from envs import SimpleBranchingEnv
 from scip_ecole_logger import logger
 
 
@@ -76,30 +77,28 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
 
 
 def scip_ecole_optimize(
-    path_to_lp_file: PosixPath, scip_params: dict
+    env: ecole.environment.Branching,
+    path_to_lp_file: PosixPath,
 ) -> ecole.core.scip.Model:
     """
     Запускает процесс поиска решения
     """
-    logger.info("Procedure for finding solution with `SCIP+Ecole` has been started ...")
-    env = ecole.environment.Branching(
-        scip_params=scip_params,
-        observation_function=ecole.observation.MilpBipartite(),
-        reward_function=ecole.reward.NNodes(),
-        information_function={
-            "nb_nodes": ecole.reward.NNodes().cumsum(),
-            "time": ecole.reward.SolvingTime().cumsum(),
-        },
-    )
     logger.info("Reset environment ...")
     nb_nodes, time = 0, 0
     obs, action_set, reward, done, info = env.reset(str(path_to_lp_file))
 
+    msg = (
+        "\n\tNew step in environment [iter={}]\n"
+        "\taction_set: {}\n"
+        "\treward: {}\n"
+        "\tinfo: {}\n"
+        "\tdone: {}\n"
+    )
+
     count = 0
     while not done:
-        logger.info(f"New step in environment [iter={count}] ...")
+        logger.info(msg.format(count, action_set, reward, info, done))
         obs, action_set, reward, done, info = env.step(action_set[0])
-        # print(f"In while-ecole loop: {obs}, {action_set}, {reward}, {done}, {info}")
 
         nb_nodes += info["nb_nodes"]
         time += info["time"]
@@ -183,7 +182,7 @@ def main():
     Главная функция, запускающая цепочку вычислений
     на базе связки SCIP+Ecole
     """
-    logger.info("SCIP+Ecole starts working ...")
+    logger.info("Procedure for finding solution with `SCIP+Ecole` has been started ...")
     # Загрузить локальные переменные в текущее окружение
     dotenv.load_dotenv(".env")
 
@@ -215,8 +214,18 @@ def main():
         path_to_lp_file=path_to_lp_file
     )
 
+    # Создать экземпляр окружения
+    env = SimpleBranchingEnv(
+        observation_function=ecole.observation.Pseudocosts(),
+        reward_function=ecole.reward.SolvingTime(),
+        information_function={
+            "nb_nodes": ecole.reward.NNodes().cumsum(),
+            "time": ecole.reward.SolvingTime().cumsum(),
+        },
+        scip_params=scip_params,
+    ).create_env()
     # Запустить процедуру поиска решения
-    model = scip_ecole_optimize(path_to_lp_file=path_to_lp_file, scip_params=scip_params)
+    model = scip_ecole_optimize(env=env, path_to_lp_file=path_to_lp_file)
 
     # Записать статистику и резульаты поиска решения
     write_results_and_stats(
