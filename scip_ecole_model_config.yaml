@@ -1,7 +1,14 @@
 ---
 # ===== КОНФИГУРАЦИОННЫЙ ФАЙЛ УПРАВЛЕНИЯ СВЯЗКОЙ SCIP+Ecole =====
+problem_name: !!str IKP_MILP_SCIP_ECOLE
 # Путь до файла математической постановки задачи
 path_to_lp_file: !!str input_for_model/ikp_milp_problem.lp
+# path_to_lp_file: !!str input_for_model/fake_problem_5000_4000_005.lp
+# path_to_lp_file: !!str input_for_model/stein27.mps
 # Путь до файла настроек решателя SCIP
-path_to_scip_solver_configs: !!str configs_for_scip_solver/scip_without_presolving.set
+path_to_scip_solver_configs: !!str settings_for_scip_solver/scip_test.set
+# Путь до директории с результатами поиска решения
+path_to_output_dir: !!str output_from_model
+# Путь до файла решения для 'теплого' старта решателя SCIP
+path_to_warm_start_file: !!str input_for_model/gurobi.sol
 ...
