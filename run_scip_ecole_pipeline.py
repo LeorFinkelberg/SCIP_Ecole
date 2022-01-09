@@ -79,13 +79,33 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
 def scip_ecole_optimize(
     env: ecole.environment.Branching,
     path_to_lp_file: PosixPath,
+    path_to_warm_start_file: t.Optional[PosixPath] = None,
 ) -> ecole.core.scip.Model:
     """
     Запускает процесс поиска решения
     """
     logger.info("Reset environment ...")
+    env.seed(42)
     nb_nodes, time = 0, 0
-    obs, action_set, reward, done, info = env.reset(str(path_to_lp_file))
+
+    if path_to_warm_start_file is not None:
+        model_scip = pyscipopt.scip.Model()
+        # Прочитать файлы математической постановки и стартового решения
+        try:
+            model_scip.readProblem(str(path_to_lp_file))
+            warm_start_for_SCIP = model_scip.readSolFile(str(path_to_warm_start_file))
+        except OSError as err:
+            logger.error(f"{err}")
+            sys.exit(-1)
+        # Добавить решение для 'теплого' старта
+        model_scip.addSol(warm_start_for_SCIP)
+        scip_params = env.scip_params
+        model_scip.setParams(scip_params)
+        model_ecole = ecole.scip.Model.from_pyscipopt(model_scip)
+    else:
+        model_ecole = str(path_to_lp_file)
+
+    obs, action_set, reward, done, info = env.reset(model_ecole)
 
     msg = (
         "\n\tNew step in environment [iter={}]\n"
@@ -112,7 +132,11 @@ def get_stats_before_solving(path_to_lp_file: PosixPath) -> t.NamedTuple:
     Собирает статистику о задаче до запуска решения
     """
     model = pyscipopt.scip.Model()
-    model.readProblem(path_to_lp_file)
+    try:
+        model.readProblem(path_to_lp_file)
+    except OSError as err:
+        logger.error(f"{err}")
+        sys.exit(-1)
     n_vars: int = model.getNVars()
     n_bin_vars: int = model.getNBinVars()
     n_int_vars: int = model.getNIntVars()
@@ -205,6 +229,8 @@ def main():
     )
     # Путь до директории с результатами поиска решения
     path_to_output_dir: PosixPath = Path(config_params["path_to_output_dir"])
+    # Путь до файла 'теплого' старта решателя SCIP
+    path_to_warm_start_file: PosixPath = Path(config_params["path_to_warm_start_file"])
 
     # Словарь начальных управляющих параметров решателя SCIP
     scip_params: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
@@ -225,7 +251,11 @@ def main():
         scip_params=scip_params,
     ).create_env()
     # Запустить процедуру поиска решения
-    model = scip_ecole_optimize(env=env, path_to_lp_file=path_to_lp_file)
+    model = scip_ecole_optimize(
+        env=env,
+        path_to_lp_file=path_to_lp_file,
+        path_to_warm_start_file=path_to_warm_start_file,
+    )
 
     # Записать статистику и резульаты поиска решения
     write_results_and_stats(
