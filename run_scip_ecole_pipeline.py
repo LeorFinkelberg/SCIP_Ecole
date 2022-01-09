@@ -84,7 +84,6 @@ def scip_ecole_optimize(
     """
     Запускает процесс поиска решения
     """
-    logger.info("Reset environment ...")
     env.seed(42)
     nb_nodes, time = 0, 0
 
@@ -93,18 +92,22 @@ def scip_ecole_optimize(
         # Прочитать файлы математической постановки и стартового решения
         try:
             model_scip.readProblem(str(path_to_lp_file))
-            warm_start_for_SCIP = model_scip.readSolFile(str(path_to_warm_start_file))
+            warm_start_for_SCIP: pyscipopt.scip.Solution = model_scip.readSolFile(
+                str(path_to_warm_start_file)
+            )
         except OSError as err:
             logger.error(f"{err}")
             sys.exit(-1)
         # Добавить решение для 'теплого' старта
-        model_scip.addSol(warm_start_for_SCIP)
         scip_params = env.scip_params
         model_scip.setParams(scip_params)
+        model_scip.addSol(warm_start_for_SCIP)
         model_ecole = ecole.scip.Model.from_pyscipopt(model_scip)
     else:
         model_ecole = str(path_to_lp_file)
+    print(model_ecole)
 
+    logger.info("Reset environment ...")
     obs, action_set, reward, done, info = env.reset(model_ecole)
 
     msg = (
