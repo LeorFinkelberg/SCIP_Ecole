@@ -1,6 +1,6 @@
 # common
-display/lpinfo = TRUE
-limits/gap = 10
-limits/time=1200
-limits/restarts=0
-limits/solutions=1
+display/lpinfo = False
+# limits/gap = 5
+limits/time = 1000
+# limits/restarts=0
+# limits/solutions=1
