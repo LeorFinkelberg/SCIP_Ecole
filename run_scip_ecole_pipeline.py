@@ -79,7 +79,8 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
 def scip_ecole_optimize(
     env: ecole.environment.Branching,
     path_to_lp_file: PosixPath,
-    path_to_warm_start_file: t.Optional[PosixPath] = None,
+    path_to_warm_start_file: PosixPath,
+    use_warm_start: bool = False,
 ) -> ecole.core.scip.Model:
     """
     Запускает процесс поиска решения
@@ -87,7 +88,7 @@ def scip_ecole_optimize(
     env.seed(42)
     nb_nodes, time = 0, 0
 
-    if path_to_warm_start_file is not None:
+    if use_warm_start:
         model_scip = pyscipopt.scip.Model()
         # Прочитать файлы математической постановки и стартового решения
         try:
@@ -232,8 +233,10 @@ def main():
     )
     # Путь до директории с результатами поиска решения
     path_to_output_dir: PosixPath = Path(config_params["path_to_output_dir"])
-    # Путь до файла 'теплого' старта решателя SCIP
+    # Путь до sol-файла 'теплого' старта решателя SCIP
     path_to_warm_start_file: PosixPath = Path(config_params["path_to_warm_start_file"])
+    # Флаг использования теплого старта
+    use_warm_start: bool = config_params["use_warm_start"]
 
     # Словарь начальных управляющих параметров решателя SCIP
     scip_params: dict = read_scip_solver_settings_file(path_to_scip_solver_configs)
@@ -258,6 +261,7 @@ def main():
         env=env,
         path_to_lp_file=path_to_lp_file,
         path_to_warm_start_file=path_to_warm_start_file,
+        use_warm_start=use_warm_start,
     )
 
     # Записать статистику и резульаты поиска решения
