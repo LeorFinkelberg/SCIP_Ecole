@@ -9,8 +9,8 @@ import pyscipopt
 import yaml
 from pathlib2 import Path, PosixPath
 
-from envs import SimpleBranchingEnv
 from scip_ecole_logger import logger
+from scip_ecole_model.envs import SimpleBranchingEnv
 
 
 def read_config_yaml_file(path_to_config_file: PosixPath) -> dict:
