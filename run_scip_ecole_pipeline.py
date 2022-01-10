@@ -76,14 +76,53 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
     return settings
 
 
+def scip_optimize(
+    env: t.Union[
+        ecole.environment.Branching,
+        ecole.environment.Configuring,
+    ],
+    path_to_lp_file: PosixPath,
+    path_to_warm_start_file: PosixPath,
+    use_warm_start: bool = False,
+) -> pyscipopt.scip.Model:
+    """
+    Запускает процесс поиска решения
+    только с помощью SCIP
+    """
+    model_scip = pyscipopt.scip.Model()
+    # Прочитать файл математической постановки
+    model_scip.readProblem(str(path_to_lp_file))
+    scip_params = env.scip_params
+    model_scip.setParams(scip_params)
+
+    if use_warm_start:
+        # Прочитать файл стартового решения
+        try:
+            warm_start_for_SCIP: pyscipopt.scip.Solution = model_scip.readSolFile(
+                str(path_to_warm_start_file)
+            )
+            # Добавить решение для 'теплого' старта
+            model_scip.addSol(warm_start_for_SCIP)
+        except OSError as err:
+            logger.error(f"{err}")
+            sys.exit(-1)
+
+    model_scip.optimize()
+
+    return model_scip
+
+
 def scip_ecole_optimize(
-    env: ecole.environment.Branching,
+    env: t.Union[
+        ecole.environment.Branching,
+        ecole.environment.Configuring,
+    ],
     path_to_lp_file: PosixPath,
     path_to_warm_start_file: PosixPath,
     use_warm_start: bool = False,
 ) -> ecole.core.scip.Model:
     """
-    Запускает процесс поиска решения
+    Запускает процесс поиска решения с помощью SCIP+Ecole
     """
     env.seed(42)
     nb_nodes, time = 0, 0
@@ -99,14 +138,14 @@ def scip_ecole_optimize(
         except OSError as err:
             logger.error(f"{err}")
             sys.exit(-1)
-        # Добавить решение для 'теплого' старта
+
         scip_params = env.scip_params
         model_scip.setParams(scip_params)
+        # Добавить решение для 'теплого' старта
         model_scip.addSol(warm_start_for_SCIP)
         model_ecole = ecole.scip.Model.from_pyscipopt(model_scip)
     else:
         model_ecole = str(path_to_lp_file)
-    print(model_ecole)
 
     logger.info("Reset environment ...")
     obs, action_set, reward, done, info = env.reset(model_ecole)
@@ -225,6 +264,8 @@ def main():
 
     # Наименование задачи
     problem_name: str = config_params["problem_name"]
+    # Флаг использования только ресурсов решателя SCIP (без Ecole)
+    use_scip_ecole: bool = config_params["use_scip_ecole"]
     # Путь до lp-файла математической постановки задачи
     path_to_lp_file: PosixPath = Path(config_params["path_to_lp_file"])
     # Путь до set-файла настроек решателя SCIP
@@ -257,12 +298,22 @@ def main():
         scip_params=scip_params,
     ).create_env()
     # Запустить процедуру поиска решения
-    model = scip_ecole_optimize(
-        env=env,
-        path_to_lp_file=path_to_lp_file,
-        path_to_warm_start_file=path_to_warm_start_file,
-        use_warm_start=use_warm_start,
-    )
+    if use_scip_ecole:
+        # Использовать связку SCIP+Ecole
+        model = scip_ecole_optimize(
+            env=env,
+            path_to_lp_file=path_to_lp_file,
+            path_to_warm_start_file=path_to_warm_start_file,
+            use_warm_start=use_warm_start,
+        )
+    else:
+        # Использовать только решатель SCIP
+        model = scip_optimize(
+            env=env,
+            path_to_lp_file=path_to_lp_file,
+            path_to_warm_start_file=path_to_warm_start_file,
+            use_warm_start=use_warm_start,
+        )
 
     # Записать статистику и резульаты поиска решения
     write_results_and_stats(
