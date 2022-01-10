@@ -14,6 +14,38 @@ $ pre-commit gc
 ```
 
 ### Основные сведения
+Структура проекта
+```bash
+root
+ \_ input_for_model/  # директория входных данных модели
+     \_ ikp_milp_problem.lp
+     \_ warm_start_for_SCIP.sol
+     ...
+ \_ output_from_model/  # директория выходных данных модели
+     \_ IKP_MILP_SCIP_ECOLE_743414_0_168176_624143.sol
+     \_ IKP_MILP_SCIP_ECOLE_743414_0_168176_624143.stats
+ \_ settings_for_scip_solver/  # директория конфигураций решателя SCIP
+     \_ scip_without_presolving.set
+     \_ scip_without_presolving_and_heuristics.set
+     ...
+ \_ scip_ecole_model/  # директория основной логики работы связки SCIP+Ecole
+     \_ documentation/
+         \_ ...
+     \_ envs.py  # модуль пользовательских реализаций окружений агента для Ecole
+     \_ scip_ecole_logger.py  # логгер для SCIP+Ecole
+ \_ run_scip_ecole_pipeline.py  # стартовый модуль связки SCIP+Ecole
+ \_ scip_ecole_model_config.yaml  # конфигурационный файл управления связкой SCIP+Ecole
+ \_ .env  # файл локальных переменных окружения
+ \_ .flake8                  # --|
+ \_ .isort.cfg               #   |- для утилиты pre-commit
+ \_ .pre-commit-config.yaml  #   |
+ \_ pyproject.toml           # --|
+ \_ scip_ecole_log_config.ini  # конфигурация логгера
+ \_ requirements.txt  # файл внешних зависимостей
+ \_ README.md
+ \_ run_main_pipeline.sh                     # --|- вспомогательные bash-сценарии
+ \_ run_scip_with_settings_for_make_logs.sh  # --|
+```
 Настройка окружения
 ```bash
 $ git clone https://github.com/.../SCIP_Ecole.git
