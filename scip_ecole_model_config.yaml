@@ -4,13 +4,13 @@ problem_name: !!str IKP_MILP_SCIP_ECOLE
 # Флаг использования ресурсов SCIP+Ecole
 use_scip_ecole: !!bool False
 # Путь до файла математической постановки задачи
-path_to_lp_file: !!str input_for_model/ikp_milp_problem.lp
+path_to_lp_file: !!str input_for_model/ikp_milp_problem_743414_0_168176_624143.lp
 # Путь до файла настроек решателя SCIP
 path_to_scip_solver_configs: !!str settings_for_scip_solver/scip_base.set
 # Путь до директории с результатами поиска решения
 path_to_output_dir: !!str output_from_model
 # Путь до sol-файла для 'теплого' старта решателя SCIP
-path_to_warm_start_file: !!str input_for_model/warm_start_for_SCIP.sol
+path_to_warm_start_file: !!str input_for_model/warm_start_for_SCIP_743414_0_168176_624143.sol
 # Флаг использования теплого старта
 use_warm_start: !!bool True
 ...
