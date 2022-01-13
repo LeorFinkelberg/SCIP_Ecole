@@ -230,7 +230,7 @@ def write_results_and_stats(
         f"\n\tResults:\n"
         f"\t- N Sols / N Best sols: {n_sols} / {n_best_sols}\n"
         f"\t- Objective value [{status}]: {obj_val:.8g}\n"
-        f"\t- Gap: {gap:.3g}\n"
+        f"\t- Gap: {gap * 100:.3g}%\n"
         f"\t- Solving time: {solving_time / 60:.2g} min"
     )
 
