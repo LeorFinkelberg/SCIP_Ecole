@@ -123,6 +123,10 @@ $ ./run_scip_with_settings_for_make_logs.sh
 ```
 ### Дополнительная информация
 
+Архитектура продуктового решения на базе связки SCIP+Ecole
+
+![image_info](./scip_ecole_model/documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole_product.PNG)
+
 Общая архитектура решения на базе связки SCIP+Ecole
 
 ![image_info](./scip_ecole_model/documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole.PNG)
