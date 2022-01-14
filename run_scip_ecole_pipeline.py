@@ -91,7 +91,13 @@ def scip_optimize(
     """
     model_scip = pyscipopt.scip.Model()
     # Прочитать файл математической постановки
-    model_scip.readProblem(str(path_to_lp_file))
+    try:
+        model_scip.readProblem(str(path_to_lp_file))
+    except OSError as err:
+        logger.error(f"{err}")
+        sys.exit(-1)
+    else:
+        logger.info(f"File `{path_to_lp_file.name}` has been read successfully!")
     scip_params = env.scip_params
     model_scip.setParams(scip_params)
 
@@ -106,6 +112,10 @@ def scip_optimize(
         except OSError as err:
             logger.error(f"{err}")
             sys.exit(-1)
+        else:
+            logger.info(
+                f"File `{path_to_warm_start_file.name}` has been read successfully!"
+            )
 
     model_scip.optimize()
 
@@ -132,12 +142,21 @@ def scip_ecole_optimize(
         # Прочитать файлы математической постановки и стартового решения
         try:
             model_scip.readProblem(str(path_to_lp_file))
+        except OSError as err:
+            logger.error(f"{err}")
+            sys.exit(-1)
+        else:
+            logger.info(f"File `{path_to_lp_file.name}` has been read successfully!")
+
+        try:
             warm_start_for_SCIP: pyscipopt.scip.Solution = model_scip.readSolFile(
                 str(path_to_warm_start_file)
             )
         except OSError as err:
             logger.error(f"{err}")
             sys.exit(-1)
+        else:
+            logger.info(f"File `{path_to_warm_start_file}` has been read successfully!")
 
         scip_params = env.scip_params
         model_scip.setParams(scip_params)
