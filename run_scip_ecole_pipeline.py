@@ -316,9 +316,11 @@ def main():
         },
         scip_params=scip_params,
     ).create_env()
+
     # Запустить процедуру поиска решения
     if use_scip_ecole:
         # Использовать связку SCIP+Ecole
+        logger.info("SCIP+Ecole bundle is used.")
         model = scip_ecole_optimize(
             env=env,
             path_to_lp_file=path_to_lp_file,
@@ -327,6 +329,7 @@ def main():
         )
     else:
         # Использовать только решатель SCIP
+        logger.info("Only SCIP is used.")
         model = scip_optimize(
             env=env,
             path_to_lp_file=path_to_lp_file,
