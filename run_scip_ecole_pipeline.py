@@ -57,6 +57,8 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
                         value = float(value)
                     elif ("." in value) or ("e" in value):
                         value = float(value)
+                    elif value.isalpha():
+                        value = str(value)
                     else:
                         raise ValueError(
                             f"Incorrect value `{value}` ({param}: {value}) "
@@ -239,15 +241,22 @@ def write_results_and_stats(
     n_conss: int = stats_before_solving.n_conss
 
     n_vars_after_presolving: int = model.getNVars()
+    n_bin_vars_after_presolving: int = model.getNBinVars()
+    n_int_vars_after_presolving: int = model.getNIntVars()
+    n_cont_vars_after_presolving: int = (
+        n_vars_after_presolving
+        - n_bin_vars_after_presolving
+        - n_int_vars_after_presolving
+    )
     n_conss_after_presolving: int = model.getNConss()
 
     logger.info(
         f"\n\tSummary:\n"
         f"\t- Problem name (sense): {problem_name} ({obj_sense})\n"
         f"\t- N Vars: {n_vars} (after presolving {n_vars - n_vars_after_presolving} vars was deleted)\n"
-        f"\t\t* N Bin Vars: {n_bin_vars}\n"
-        f"\t\t* N Int Vars: {n_int_vars}\n"
-        f"\t\t* N Cont Vars: {n_cont_vars}\n"
+        f"\t\t* N Bin Vars: {n_bin_vars} (after presolving {n_bin_vars_after_presolving})\n"
+        f"\t\t* N Int Vars: {n_int_vars} (after presolving {n_int_vars_after_presolving})\n"
+        f"\t\t* N Cont Vars: {n_cont_vars} (after presolving {n_cont_vars_after_presolving})\n"
         f"\t- N Conss: {n_conss} (after presolving {n_conss - n_conss_after_presolving} conss was deleted)\n"
         f"\n\tResults:\n"
         f"\t- N Sols / N Best sols: {n_sols} / {n_best_sols}\n"
