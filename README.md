@@ -175,6 +175,15 @@ Gap                : 10.63 %
 	- Solving time: 12 min
 ```
 
+Запуск генератора "теплого" старта
+```bash
+$ python warm_start_generator.py \
+    --path-to-lp-file ./input_for_model/planner_bin_from_scip_50197df7.lp \
+    --path-to-sol-file ./input_for_model/warm_start_for_SCIP_bin_50197df7.sol
+$ ll input_for_model/
+    ... planner_bin_from_scip_50197df7_wo_zeros_vals.lp
+```
+
 Запуск решателя SCIP с заданными настройками и цепочкой действий
 ```bash
 $ chmod +x run_scip_with_settings_for_make_logs.sh
