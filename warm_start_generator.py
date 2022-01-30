@@ -2,7 +2,10 @@ import os
 import sys
 import typing as t
 
+import click
 import dotenv
+import numpy as np
+import pathlib2
 import pyscipopt
 from pathlib2 import Path, PosixPath
 
@@ -32,9 +35,38 @@ def read_sol_file(path_to_sol_file: PosixPath) -> dict:
     return sol_file_parsed
 
 
+@click.command()
+@click.option(
+    "--path-to-lp-file",
+    required=True,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        readable=True,
+        path_type=pathlib2.Path,
+    ),
+    help="Путь до lp-файла",
+)
+@click.option(
+    "--path-to-sol-file",
+    required=True,
+    type=click.Path(
+        exists=True,
+        path_type=pathlib2.Path,
+    ),
+    help="Путь до sol-файла",
+)
+@click.option(
+    "--path-to-input-dir",
+    required=True,
+    type=click.Path(exists=True, path_type=pathlib2.Path),
+    default=Path("./input_for_model"),
+    help="Путь до директории входнных модели",
+)
 def gen_warm_start_wo_zeros_vals(
     path_to_lp_file: PosixPath,
     path_to_sol_file: PosixPath,
+    path_to_input_dir: PosixPath,
 ) -> t.NoReturn:
     """
     Удаляет переменные, которые в "теплом" старте
@@ -44,23 +76,28 @@ def gen_warm_start_wo_zeros_vals(
     dotenv.load_dotenv(".env")
 
     model = pyscipopt.Model()
-    model.readProblem(str(path_to_lp_file))
-    warm_start: pyscipopt.scip.Solution = model.readProblem(str(path_to_sol_file))
-    model.addSol(warm_start)
-    sol: pyscipopt.scip.Solution = model.getSols()[0]
+    try:
+        model.readProblem(str(path_to_lp_file))
+        warm_start: pyscipopt.scip.Solution = model.readSolFile(str(path_to_sol_file))
+    except OSError as err:
+        logger.error(f"{err}")
+        sys.exit(-1)
+    else:
+        logger.info(f"File `{path_to_lp_file.name}` has been read successfully!")
+        model.addSol(warm_start)
+
+        sol: pyscipopt.scip.Solution = model.getSols()[0]
 
     for var in model.getVars():
-        if model.getSolvingTime(sol, var) == 0.0:
+        if np.round(model.getSolVal(sol, var)) == 0.0:
             model.delVar(var)
-            logger.info(f"Var {var} has been deleted...")
-
-    SCIP_ECOLE_MODEL_CONFIG_FILENAME = os.getenv("SCIP_ECOLE_MODEL_CONFIG_FILENAME")
-    path_to_scip_ecole_model_config_file = (
-        Path().cwd().joinpath(SCIP_ECOLE_MODEL_CONFIG_FILENAME)
-    )
-    config_params: dict = read_config_yaml_file(path_to_scip_ecole_model_config_file)
-    path_to_output_dir: PosixPath = Path(config_params["path_to_output_dir"])
 
     model.writeProblem(
-        path_to_output_dir.joinpath(f"{path_to_lp_file.name}_wo_zeros_vals")
+        path_to_input_dir.joinpath(
+            Path(f"{path_to_lp_file.name.split('.')[0]}_wo_zeros_vals.lp")
+        )
     )
+
+
+if __name__ == "__main__":
+    gen_warm_start_wo_zeros_vals()
