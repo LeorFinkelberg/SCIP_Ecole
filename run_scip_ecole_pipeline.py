@@ -43,8 +43,6 @@ def scip_optimize(
             warm_start_for_SCIP: pyscipopt.scip.Solution = model_scip.readSolFile(
                 str(path_to_warm_start_file)
             )
-            # Добавить решение для 'теплого' старта
-            model_scip.addSol(warm_start_for_SCIP)
         except OSError as err:
             logger.error(f"{err}")
             sys.exit(-1)
@@ -53,7 +51,10 @@ def scip_optimize(
                 f"File `{path_to_warm_start_file.name}` has been read successfully!"
             )
 
-    model_scip.optimize()
+            # Добавить решение для 'теплого' старта
+            model_scip.addSol(warm_start_for_SCIP)
+
+            model_scip.optimize()
 
     return model_scip
 
