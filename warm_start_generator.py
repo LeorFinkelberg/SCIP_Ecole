@@ -78,6 +78,9 @@ def gen_warm_start_wo_zeros_vals(
     model = pyscipopt.Model()
     try:
         model.readProblem(str(path_to_lp_file))
+        n_vars_before = model.getNVars()
+        n_bin_vars_before = model.getNBinVars()
+        n_int_vars_before = model.getNIntVars()
         warm_start: pyscipopt.scip.Solution = model.readSolFile(str(path_to_sol_file))
     except OSError as err:
         logger.error(f"{err}")
@@ -89,8 +92,21 @@ def gen_warm_start_wo_zeros_vals(
         sol: pyscipopt.scip.Solution = model.getSols()[0]
 
     for var in model.getVars():
-        if np.round(model.getSolVal(sol, var)) == 0.0:
+        value = model.getSolVal(sol, var)
+        if np.round(value) == 0.0:
+            print(f"{var.name} ({var.vtype()}) = {value}...")
             model.delVar(var)
+
+    n_vars_after = model.getNVars()
+    n_bin_vars_after = model.getNBinVars()
+    n_int_vars_after = model.getNIntVars()
+
+    print(
+        f"Was -> n_vars: {n_vars_before}, n_int_vars: {n_int_vars_before}, n_bin_vars: {n_bin_vars_before}"
+    )
+    print(
+        f"Now -> n_vars: {n_vars_after}, n_int_vars: {n_int_vars_after}, n_bin_vars: {n_bin_vars_after}"
+    )
 
     model.writeProblem(
         path_to_input_dir.joinpath(
