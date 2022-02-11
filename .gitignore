@@ -1,6 +1,7 @@
 # input/output Scip+Ecole
 input_for_scip_ecole/
 output_from_scip_ecole/
+scenarios/
 
 # LaTeX
 *.aux
