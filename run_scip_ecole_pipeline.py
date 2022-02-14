@@ -92,7 +92,7 @@ def write_results_and_stats(
     )
     stats_filename = f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.stats"
 
-    model.writeBestSol(path_to_output_dir.joinpath(best_sol_filename))
+    model.writeBestSol(path_to_output_dir.joinpath(best_sol_filename), write_zeros=True)
     model.writeStatistics(path_to_output_dir.joinpath(stats_filename))
 
 
