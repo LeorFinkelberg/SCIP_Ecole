@@ -69,6 +69,10 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
         logger.error(f"{err}")
         sys.exit(-1)
     else:
-        logger.info(f"File `{path_to_settings_file}` has been read successfully!")
+        params_info = f"File `{path_to_settings_file}` has been read successfully!"
+        params_info += "\n\tSCIP settings:\n"
+        for param_name, value in settings.items():
+            params_info += f"\t\t{param_name} = {value}\n"
+        logger.info(params_info)
 
     return settings
