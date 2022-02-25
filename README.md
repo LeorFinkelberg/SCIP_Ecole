@@ -201,15 +201,15 @@ $ ./run_scip_with_settings_for_make_logs.sh
 
 Архитектура продуктового решения на базе связки SCIP+Ecole
 
-![image_info](./scip_ecole_model/documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole_product.PNG)
+![image_info](documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole_product.PNG)
 
 Общая архитектура решения на базе связки SCIP+Ecole
 
-![image_info](./scip_ecole_model/documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole.PNG)
+![image_info](documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole.PNG)
 
 Реализация с внешним модулем машинного обучения
 
-![image_info](./scip_ecole_model/documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole_ml.PNG)
+![image_info](documentation/prospects_ML_algorithms_for_MILP/figures/architec_scip_ecole_ml.PNG)
 
 Процедурой поиска решения с помощью связки SCIP+Ecole можно управлять
 через пользовательские классы модуля `envs.py`. После объявления класса останется только создать экземпляр окружения в модуле `run_scip_ecole_pipeline.py`
