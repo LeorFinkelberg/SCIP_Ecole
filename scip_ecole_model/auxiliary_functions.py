@@ -105,3 +105,62 @@ def get_stats_before_solving(
     model_stats.n_conss = n_conss
 
     return model_stats
+
+
+def write_results_and_stats(
+    problem_name: str,
+    model: pyscipopt.scip.Model,
+    stats_before_solving: t.NamedTuple,
+    path_to_output_dir: PosixPath,
+    logger: logging.Logger,
+) -> t.NoReturn:
+    """
+    Записывает результаты поиска решения и статистику
+    """
+    obj_val: float = model.getObjVal()
+    obj_sense: str = model.getObjectiveSense()
+    gap: float = model.getGap()
+    solving_time: float = model.getSolvingTime()
+    status: str = model.getStatus()
+    n_sols: int = model.getNSols()
+    n_best_sols: int = model.getNBestSolsFound()
+
+    n_vars: int = stats_before_solving.n_vars
+    n_bin_vars: int = stats_before_solving.n_bin_vars
+    n_int_vars: int = stats_before_solving.n_int_vars
+    n_cont_vars: int = n_vars - n_bin_vars - n_int_vars
+    n_conss: int = stats_before_solving.n_conss
+
+    n_vars_after_presolving: int = model.getNVars()
+    n_bin_vars_after_presolving: int = model.getNBinVars()
+    n_int_vars_after_presolving: int = model.getNIntVars()
+    n_cont_vars_after_presolving: int = (
+        n_vars_after_presolving
+        - n_bin_vars_after_presolving
+        - n_int_vars_after_presolving
+    )
+    n_conss_after_presolving: int = model.getNConss()
+
+    logger.info(
+        f"\n\tSummary:\n"
+        f"\t- Problem name (sense): {problem_name} ({obj_sense})\n"
+        f"\t- N Vars: {n_vars} (after presolving {n_vars - n_vars_after_presolving} vars was deleted)\n"
+        f"\t\t* N Bin Vars: {n_bin_vars} (after presolving {n_bin_vars_after_presolving})\n"
+        f"\t\t* N Int Vars: {n_int_vars} (after presolving {n_int_vars_after_presolving})\n"
+        f"\t\t* N Cont Vars: {n_cont_vars} (after presolving {n_cont_vars_after_presolving})\n"
+        f"\t- N Conss: {n_conss} (after presolving {n_conss - n_conss_after_presolving} conss was deleted)\n"
+        f"\n\tResults:\n"
+        f"\t- N Sols / N Best sols: {n_sols} / {n_best_sols}\n"
+        f"\t- Objective value [{status}]: {obj_val:.8g}\n"
+        f"\t- Gap: {gap * 100:.3g}%\n"
+        f"\t- Solving time: {solving_time / 60:.2g} min"
+    )
+
+    path_to_output_dir = Path().cwd().joinpath(path_to_output_dir)
+    best_sol_filename = (
+        f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.sol"
+    )
+    stats_filename = f"{problem_name}_{n_vars}_{n_bin_vars}_{n_int_vars}_{n_conss}.stats"
+
+    model.writeBestSol(path_to_output_dir.joinpath(best_sol_filename), write_zeros=True)
+    model.writeStatistics(path_to_output_dir.joinpath(stats_filename))
