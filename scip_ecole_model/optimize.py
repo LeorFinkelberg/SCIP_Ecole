@@ -102,23 +102,35 @@ def scip_ecole_optimize(
         model_ecole = str(path_to_lp_file)
 
     logger.info("Reset environment ...")
-    obs, action_set, reward, done, info = env.reset(model_ecole)
-
-    msg = (
-        "\n\tNew step in environment [iter={}]\n"
-        "\taction_set: {}\n"
-        "\treward: {}\n"
-        "\tinfo: {}\n"
-        "\tdone: {}\n"
-    )
-
     count = 0
-    while not done:
-        logger.info(msg.format(count, action_set, reward, info, done))
-        obs, action_set, reward, done, info = env.step(action_set[0])
+    if env.__class__.__name__ == "Branching":
+        obs, action_set, reward, done, info = env.reset(model_ecole)
 
-        nb_nodes += info["nb_nodes"]
-        time += info["time"]
-        count += 1
+        msg = (
+            "\n\tNew step in environment [iter={}]\n"
+            "\taction_set: {}\n"
+            "\treward: {}\n"
+            "\tinfo: {}\n"
+            "\tdone: {}\n"
+        )
+
+        while not done:
+            logger.info(msg.format(count, action_set, reward, info, done))
+            obs, action_set, reward, done, info = env.step(action_set[0])
+
+            nb_nodes += info["nb_nodes"]
+            time += info["time"]
+            count += 1
+    elif env.__class__.__name__ == "PrimalSearchDynamics":
+        done, action_set = env.reset_dynamics(model_ecole)
+
+        msg = (
+            "\n\tNew step in environment [iter={}]\n" "\taction_set: {}\n" "\tdone: {}\n"
+        )
+
+        while not done:
+            logger.info(msg.format(count, action_set, done))
+            done, action_set = env.step_dynamics(model_ecole, action_set[0])
+            count += 1
 
     return env.model.as_pyscipopt()
