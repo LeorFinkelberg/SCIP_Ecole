@@ -1,3 +1,4 @@
+import logging
 import sys
 import typing as t
 from collections import namedtuple
@@ -76,3 +77,31 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
         logger.info(params_info)
 
     return settings
+
+
+def get_stats_before_solving(
+    path_to_lp_file: PosixPath, logger: logging.Logger
+) -> t.NamedTuple:
+    """
+    Собирает статистику о задаче до запуска решения
+    """
+    model = pyscipopt.scip.Model()
+    try:
+        model.readProblem(path_to_lp_file)
+    except OSError as err:
+        logger.error(f"{err}")
+        sys.exit(-1)
+    n_vars: int = model.getNVars()
+    n_bin_vars: int = model.getNBinVars()
+    n_int_vars: int = model.getNIntVars()
+    n_conss: int = model.getNConss()
+
+    model_stats = namedtuple(
+        "model_stats", ["n_vars", "n_bin_vars", "n_int_vars", "n_conss"]
+    )
+    model_stats.n_vars = n_vars
+    model_stats.n_bin_vars = n_bin_vars
+    model_stats.n_int_vars = n_int_vars
+    model_stats.n_conss = n_conss
+
+    return model_stats
