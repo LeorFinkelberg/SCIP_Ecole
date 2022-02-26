@@ -7,7 +7,7 @@ from pathlib2 import Path, PosixPath
 from scip_ecole_model.auxiliary_functions import *
 from scip_ecole_model.envs import SimpleBranchingEnv
 from scip_ecole_model.optimize import scip_ecole_optimize, scip_optimize
-from scip_ecole_model.scip_ecole_logger import logger
+from scip_ecole_model.utils.scip_ecole_logger import logger
 
 
 def main():
