@@ -124,9 +124,7 @@ def scip_ecole_optimize(
     elif env.__class__.__name__ == "PrimalSearchDynamics":
         done, action_set = env.reset_dynamics(model_ecole)
 
-        msg = (
-            "\n\tNew step in environment [iter={}]\n" "\taction_set: {}\n" "\tdone: {}\n"
-        )
+        msg = "\n\tNew step in environment [iter={}]\n\taction_set: {}\n\tdone: {}\n"
 
         while not done:
             logger.info(msg.format(count, action_set, done))
