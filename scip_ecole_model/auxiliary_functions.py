@@ -7,7 +7,7 @@ import pyscipopt
 import yaml
 from pathlib2 import Path, PosixPath
 
-from scip_ecole_model.scip_ecole_logger import logger
+from scip_ecole_model.utils.scip_ecole_logger import logger
 
 
 def read_config_yaml_file(path_to_config_file: PosixPath) -> dict:
