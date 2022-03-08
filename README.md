@@ -166,6 +166,49 @@ scip \
     > output_from_model/scip_output_wo_presolving_and_separating.log
 $ ./run_scip_with_settings_for_make_logs.sh
 ```
+
+Сборка решателя SCIP в многопоточном режиме (флаг [`TPI=tny`](https://scipopt.org/doc-7.0.1/html/MAKE.php)) и настройка решателя SCIP.
+Перед установкой SCIP на Linux следует установить `boost`, `gmp` etc. (http://listserv.zib.de/pipermail/scip/2020-November/004144.html)
+Замечание. Пакет `libc++` полностью поддерживается только в MacOS. Linux использует `libstdc++` и поэтому нужно устанавливать GCC весрии 5.1.*
+```bash
+# MacOS
+$ make \
+    ZLIB=false \
+    READLINE=false \
+    ZIMPL=false \
+    LPS=spx2 # new SoPlex LP-solver (default) (from version 2)
+    TPI=tny # use the tinycthread's library which is bundled with SCIP
+$ scip
+SCIP> read planner.lp
+SCIP> read warm_start.sol
+SCIP> set paral minnthreads 4
+SCIP> set paral maxnthreads 8
+# Linux
+$ sudo yum install -y epel-release
+$ sudo yum install gcc-c++
+$ gcc --version # gcc (GCC) 4.8.5 ...
+$ sudo yum install centos-release-scl
+$ sudo yum install devtoolset-7
+$ scl enable devtoolset-7 bash
+$ gcc --version # gcc (GCC) 7.3.1 ...
+$ sudo yum install boost boost-devel # будут установлены boost-thread, boost-system etc.
+$ sudo yum install gmp-devel
+$ sudo yum install cppzmq-devel
+$ curl -o ./scipoptsuite-7.0.3.tgz https://scipopt.org/download.php\?fname\=scipoptsuite-7.0.3.tgz
+$ tar xvf scipoptsuite-7.0.3.tgz
+$ cd scipoptsuite-7.0.3
+$ make \
+    ZLIB=false \
+    READLINE=false \
+    ZIMPL=false \
+    LPS=spx2 # new SoPlex LP-solver (default) (from version 2)
+    TPI=tny # use the tinycthread's library which is bundled with SCIP
+$ scip
+SCIP> read planner.lp
+SCIP> read warm_start.sol
+SCIP> set paral minnthreads 4
+SCIP> set paral maxnthreads 8
+```
 ### Дополнительная информация
 
 Архитектура продуктового решения на базе связки SCIP+Ecole
