@@ -33,7 +33,7 @@ def read_scip_solver_settings_file(path_to_settings_file: PosixPath) -> dict:
     """
     settings: t.Dict[str, t.Union[str, int, float, bool]] = {}
     try:
-        with open(path_to_settings_file, mode="r", encoding="utf-8") as fo:
+        with open(path_to_settings_file, encoding="utf-8") as fo:
             try:
                 for line in fo:
                     line = line.strip()

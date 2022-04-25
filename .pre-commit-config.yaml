@@ -1,55 +1,43 @@
 exclude: _pb2\.py$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.1.0
   hooks:
-    # проверяет наличие переноса строки в конце всех текстовых файлов
     - id: end-of-file-fixer
-    # предупреждает о добавлении больших файлов в Git
-    # - id: check-added-large-files
-    # предупреждает о сохранении файлов с UTF-8 BOM
+    - id: check-added-large-files
+      args: ["--maxkb=800"]
     - id: fix-byte-order-marker
-    # предотвращает сохранение приватных ключей
     - id: detect-private-key
-    # убивает пробелы в конце строки
     - id: trailing-whitespace
-    # проверяет на предмет расположения docstring после кода
     - id: check-docstring-first
-    # проверяет файлы на предмет конфликтующих строк при операции слияния
     - id: check-merge-conflict
-    # проводит синтаксический анализ yaml-файлов
     - id: check-yaml
-    # проводит синтаксический анализ toml-файлов
     - id: check-toml
-    # прводит синтаксический анализ json-файлов
     - id: check-json
+
+
 - repo: https://github.com/pre-commit/mirrors-isort
-  rev: f0001b2  # Use the revision sha / tag you want to point at
+  rev: v5.7.0  # Use the revision sha / tag you want to point at
   hooks:
     - id: isort
       args: ["--profile", "black"]
+
 - repo: https://github.com/psf/black
-  rev: 21.7b0
+  rev: 22.3.0
   hooks:
     - id: black
+      args: ["--config=pyproject.toml"]
       language_version: python3
-- repo: https://github.com/asottile/yesqa
-  rev: v1.1.0
-  hooks:
-  - id: yesqa
-    additional_dependencies:
-    - flake8-bugbear==20.1.4
-    - flake8-builtins==1.5.2
-    - flake8-comprehensions==3.2.2
-    - flake8-tidy-imports==4.1.0
-    - flake8==3.7.9
+    - id: black-jupyter
+
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.7.3
+  rev: v2.31.1
   hooks:
   - id: pyupgrade
     args: ['--py37-plus']
+
 - repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.5.1
+  rev: v1.9.0
   hooks:
   - id: python-check-mock-methods
   - id: python-use-type-annotations
