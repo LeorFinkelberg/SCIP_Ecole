@@ -313,7 +313,6 @@ class StatFileParser:
             columns=self._structure_of_doc[section_name],
         )
         section.index.name = section_name
-        section = section.applymap(lambda elem: self._extract_int_number_wo_plus(elem))
 
         return section.replace(to_replace="-", value=np.nan).fillna(0).astype(np.float64)
 
@@ -323,24 +322,6 @@ class StatFileParser:
         из строки с 'мусорным' хвостом
         """
         return re.compile(r"^(\d+[.]\d+)\s\(.*$").findall(value)
-
-    def _regex_extract_int_number_wo_plus(self, value: str) -> list:
-        """
-        Извлекает целое число
-        без следующего за ним символа '+'
-        """
-        return re.compile(r"^(\d+)\+$").findall(value)
-
-    def _extract_int_number_wo_plus(self, value: str) -> str:
-        """
-        Возвращает либо транзит (свой аргумент без изменений),
-        либо результат работы регулярного выражения как строку
-        """
-        regex_result = self._regex_extract_int_number_wo_plus(value)
-        if regex_result:
-            return regex_result[0]
-        else:
-            return value
 
     def _regex_extract_simple_int_float_number(self, value: str) -> list:
         """
