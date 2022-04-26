@@ -270,7 +270,14 @@ class StatFileParser:
                 ServiceAttributes._NUM_COLS_DIVING_ADAPTIVE,
                 ServiceAttributes._NUM_COLS_NEIGHBORHOODS,
             ):
-                self._structure_of_doc[key] = value.split()
+                self._structure_of_doc[key] = [
+                    (
+                        self._regex_extract_int_number_wo_plus(elem)[0]
+                        if self._regex_extract_int_number_wo_plus(elem)
+                        else elem
+                    )
+                    for elem in value.split()
+                ]
             else:
                 continue
 
@@ -328,6 +335,13 @@ class StatFileParser:
         Извлекает целое или вещественное число
         """
         return re.compile(r"^(\d+([.]\d+)?)$").findall(value)
+
+    def _regex_extract_int_number_wo_plus(self, value: str) -> list:
+        """
+        Извлекает из 'числовой' строки целое число
+        без следующего за ним символа '+'
+        """
+        return re.compile(r"^(\d+)\+$").findall(value)
 
     def _regex_extract_vars_stats(self, value: str) -> list:
         """
