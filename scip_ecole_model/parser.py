@@ -447,6 +447,34 @@ class StatFileParser:
         self._structure_of_doc[key] = (ServiceAttributes._ONE_BLANK).join(values)
 
 
+def SCIP_elems_activity_plot(
+    *,
+    stat_file: StatFileParser,
+    section_name: str,
+    title: str,
+    elems: t.List[str],
+    styles: t.List[str],
+    colors: t.List[str],
+    ax=None,
+    figsize: t.Tuple[int, int] = (15, 5),
+) -> t.NoReturn:
+    """
+    Отрисовывает график активности заданного элемента SCIP
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+
+    section: pd.DataFrame = stat_file.get_section(section_name)
+    section.loc[elems, :].T.plot(
+        ax=ax,
+        style=styles,
+        color=colors,
+    )
+
+    ax.set_xticks(range(section.shape[1]), section.columns.to_list(), rotation=90)
+    ax.set_title(title)
+
+
 def stats_info_plot(
     *,
     stat_file: StatFileParser,
