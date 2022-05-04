@@ -447,6 +447,43 @@ class StatFileParser:
         self._structure_of_doc[key] = (ServiceAttributes._ONE_BLANK).join(values)
 
 
+def stats_info_plot(
+    *,
+    stat_file: StatFileParser,
+    title: t.Optional[str] = None,
+    ax=None,
+    figsize: t.Tuple[int, int] = (10, 4),
+) -> t.NoReturn:
+    """
+    Отрисовывает статистику задачи
+    до и после шага пресолвинга
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+
+    COLORS = ("red", "blue")
+
+    stat_info_before_presolve: dict = stat_file.get_param("Original_Problem.Variables")
+    stat_info_before_presolve: pd.DataFrame = pd.DataFrame(
+        {key: [value] for key, value in stat_info_before_presolve.items()},
+        index=["before_presolve"],
+    ).T
+
+    stat_info_after_presolve: dict = stat_file.get_param("Presolved_Problem.Variables")
+    stat_info_after_presolve: pd.DataFrame = pd.DataFrame(
+        {key: [value] for key, value in stat_info_after_presolve.items()},
+        index=["after_presolve"],
+    ).T
+
+    stat_info_before_presolve.join(stat_info_after_presolve).plot.barh(
+        ax=ax,
+        stacked=False,
+        color=COLORS,
+    )
+
+    ax.set_title(title)
+
+
 def heatmap_comparison_plot(
     *,
     stat_file_left: StatFileParser,
