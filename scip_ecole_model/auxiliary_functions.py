@@ -179,3 +179,35 @@ def get_var_value_by_var_name(
     var_index: int = [var.getIndex() for var in vars_ if var.name == var_name][0]
 
     return model.getSolVal(sol, vars_[var_index])
+
+
+def get_obj_var_by_var_name(
+    var_name: str, vars_: t.List[pyscipopt.scip.Variable]
+) -> float:
+    """
+    Извлекает коэффициент при переменной в целевой функции по имени переменной
+    """
+    return [var.getObj() for var in vars_ if var.name == var_name][0]
+
+
+def write_warm_start(
+    path_to_base_sol_file: pathlib2.Path,
+    path_to_warm_start_file: pathlib2.Path,
+    vars_: t.List[pyscipopt.scip.Variable],
+) -> t.NoReturn:
+    """
+    Записывает 'теплый' старт для сценария с бинарными переменными
+    на базе sol-файла сценария без бинарных переменных
+    """
+    base_sol: dict = parse_sol_file(path_to_base_sol_file)
+
+    with open(path_to_warm_start_file, mode="w", encoding="utf-8") as warm_start:
+        for var in tqdm(vars_):
+            var_name = var.name
+            if var_name in base_sol:
+                value = base_sol[var_name]
+            else:
+                value = 0
+            warm_start.write(
+                f"{var_name:<50}{value:>20}  (obj:{var_name_to_obj_var[var.name]})\n"
+            )
