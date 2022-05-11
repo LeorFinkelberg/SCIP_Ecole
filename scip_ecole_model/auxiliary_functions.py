@@ -164,3 +164,18 @@ def write_results_and_stats(
 
     model.writeBestSol(path_to_output_dir.joinpath(best_sol_filename), write_zeros=True)
     model.writeStatistics(path_to_output_dir.joinpath(stats_filename))
+
+
+def get_var_value_by_var_name(
+    var_name: str,
+    vars_: t.List[pyscipopt.scip.Variable],
+    model: pyscipopt.scip.Model,
+    sol: pyscipopt.scip.Solution,
+) -> float:
+    """
+    Извлекает значение переменной по ее имени
+    из переданного решения
+    """
+    var_index: int = [var.getIndex() for var in vars_ if var.name == var_name][0]
+
+    return model.getSolVal(sol, vars_[var_index])
